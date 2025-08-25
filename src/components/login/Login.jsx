@@ -1,40 +1,80 @@
 import React, { useState } from 'react'
-import { useNavigate, useSubmit } from 'react-router-dom'
-import {useDispatch} from 'react-redux'
+import { Link, useNavigate, useSubmit } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import authService from '../../appwrite/auth';
-import {login as authLogin} from '../../store/authSlice'
+import { login as authLogin } from '../../store/authSlice'
+import Logo from '../Logo'
+import PostForm from '../postFrom/PostForm';
+
 
 const Login = () => {
 
-    const navigate=useNavigate();
-    const dispatch=useDispatch()
-    const {register, handleSubmit}=useSubmit();
-    const [error,setError]=useState("");
+    const navigate = useNavigate();
+    const dispatch = useDispatch()
+    const { register, handleSubmit } = useSubmit();
+    const [error, setError] = useState("");
 
-    const login=async(data)=>{
+    const login = async (data) => {
         setError("")
         try {
-            const session=await authService.login(data);
-            if(session){
-                const {userData}= await authService.getCurrentUser()
-                if(userData) dispatch(authLogin(userData))
-                    navigate("/")
+            const session = await authService.login(data);
+            if (session) {
+                const { userData } = await authService.getCurrentUser()
+                if (userData) dispatch(authLogin(userData))
+                navigate("/")
             }
         } catch (error) {
             setError(error.message)
         }
     }
-  return (
-    <div className='flex items-center justify-center w-full'>
+    return (
+        <div className='flex items-center justify-center w-full'>
 
-        <div className={`mx-auto flex justify-center`}>
-            <span className='inline-block w-full max-w-[100px]'>
-                <Logo/>
-            </span>
-            <h2>Sign in to your account</h2>
+            <div className={`mx-auto flex justify-center`}>
+                <span className='inline-block w-full max-w-[100px]'>
+                    <Logo />
+                </span>
+                <h2 className='text-center text-2xl font-bold leading-tight'>Sign in to your account</h2>
+                <p className='mt-2 text-center text-base text-black/60'>
+                    Don@apos;t have any account?&nbsp;
+                    <Link
+                        to={"/signup"}
+                        className='font-medium text-primary
+                    transition-all duration-200
+                    hover:underline'
+                    >
+                        Sign Up
+                    </Link>
+                </p>
+                {error && <p
+                    className='text-red-600 mt-8 text-center'
+                >{error}</p>}
+                <form onSubmit={handleSubmit(login)}
+                    className='mt-8'>
+                    <div className='space-y-5'>
+                        <input type="email"
+                            placeholder='Enter your email'
+                            label="Email"
+                            {...register("email", {
+                                required: true,
+                                validate: {
+                                    matchPatern: (value) => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
+                                        "Email address must be a valid address",
+                                }
+                            })}
+                        />
+                    <input type="password"
+                    placeholder='Enter your password'
+                    {...register("password",{required:true})}
+                     />
+                     <button
+                     type='submit'
+                     className='w-full'>Sign in</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-  )
+    )
 }
 
 export default Login
